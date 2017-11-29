@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Grace Analytics</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script type="text/javascript" src="js/bootstrap-filestyle.min.js"> </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<style>
+
+body {
+
+  font-family: "Courier New";
+}
+button {
+  text-decoration: none;
+  color: white;
+  font-size: 15px;
+  font-family: "Courier New";
+  background: none;
+  border: none;
+}
+button:hover{
+  text-decoration: inherit;
+  color: inherit;
+  background: inherit;
+  border: inherit;
+  font-weight: bold;
+}
+a {
+  text-decoration: none;
+  color: white;
+}
+a:hover {
+  text-decoration: inherit;
+  color: inherit;
+  font-weight: bold;
+}
+
+.hidden {
+
+
+  display: none;
+}
+
+.popup {
+  display: none;
+  position: absolute;
+  width: 500px;
+  height: 400px;
+  top: 20%;
+  margin-left: 20%;
+  background-color: white;
+  color: black;
+  border-radius: 3px;
+  border: 1px solid black;
+}
+
+.topbar {
+  background-color: #5DADE2;
+  margin: 0px;
+  color: white;
+  font-family: "Courier New";
+  padding: 10px;
+
+
+}
+.columns {
+  font-size: 14px;
+}
+
+.logout-position {
+  position: absolute;
+  top: 20px;
+  right: 10%;
+
+}
+
+.download-position {
+  position: absolute;
+  top: 20px;
+  right: 40%;
+
+}
+.innerform{
+  text-align: center;
+}
+.col-1 {
+  position: absolute;
+  left: 5%;
+  overflow: scroll;
+}
+.col-2 {
+  position: absolute;
+  left: 400px;
+  overflow: scroll;
+
+}
+.col-3 {
+  position: absolute;
+  left: 1200px;
+  overflow: scroll;
+}
+.column-row {
+  border: 1px gray solid;
+  border-radius: 3px;
+  padding: 5px;
+  width: 300px;
+  margin-bottom: 5px;
+}
+.column-row2 {
+  border: 1px gray solid;
+  border-radius: 3px;
+  padding: 5px;
+  width: 600px;
+  margin-bottom: 5px;
+}
+.fixedy {
+ width: 100%;
+}
+.workspace-position {
+  position: absolute;
+  top: 80px;
+  width: 100%;
+}
+.upload {
+  position: relative;
+  left: 20%;
+
+}
+
+</style>
+</head>
+
+
+<body>
+  <!--Header bar-->
+  <div class = "fixedy topbar">
+    <button  class = "open " id = "upload_data"> New Dataset</button>
+    <button  class = "open " id = "open_data"> Open Dataset</button>
+      <a href = "/download/{{netid}}" class = "download-position">Download</a>
+    <a href = "/logout/" class = "logout-position">Log Out</a>
+
+  </div>
+
+
+  <!-- Dataset statistics-->
+<div class = "workspace-position">
+
+
+<!-- title: will be replaced soon so leave be -->
+
+
+
+
+<!--Will eventually display columns/column types-->
+
+<div class = "col-1">
+  <input type="checkbox"  id="estado_cat" class="ibtn">
+  <h4>Dataset Summary</h4>
+<h4 class = "title"> Title: {{dataset_name}}</h4>
+<h5 class = "title"> Number of entries: {{dataset_entries}}</h5>
+
+{%if dataset_name != "No Dataset Set to Default"%}
+<h4>Columns:</h4>
+
+  <form action = "/main/{{netid}}/" enctype="multipart/form-data"method="post" class = "columns">
+    {% csrf_token %}
+    <div class = "column-row">
+
+    {%for each in dataset_columns %}
+
+    {%if each.label == "Delete?"%}
+    <br/>{{each.label}}{{each}}
+    </div> <div class = "column-row">{%endif%}
+
+    {%if each.label != "Delete?"%}
+    {{each.label}}{{each}}
+    {%endif%}
+    {%endfor%}
+  </div>
+</form>
+
+<h4>Deleted Columns:</h4>
+<form action = "/main/{{netid}}/" enctype="multipart/form-data"method="post">
+  {% csrf_token %}
+  <div class = "column-row" >
+    {{forloop.counter0}}
+  {%for each in deleted_dataset_columns %}
+
+  {%if each.label == "Undo Delete?"%}
+  <br/>{{each.label}}{{each}}
+  </div> <div class = "column-row">{%endif%}
+
+  {%if each.label != "Undo Delete?"%}
+  {{each.label}}{{each}}
+  {%endif%}
+  {%endfor%}
+</div>
+</form>
+
+{%endif%}
+</div>
+<div class = "col-2 ">
+  <h4>Processing</h4>
+  {{selected_name}}
+  <br></br>
+  <form action = "/main/{{netid}}/" enctype="multipart/form-data"method="post">
+    {%csrf_token %}
+    {{selected_choices.colid}}
+    {{selected_choices.addchoice.label}}
+    {{selected_choices.addchoice}} <br><br>
+    {%for each in selected_choices%}
+    {%if each.label != "Change Category View"%}
+    {%if each.label != "Add Category"%}
+    {%if each != selected_choices.colid%}
+    <div class = "column-row2">
+    {{each.label}} {{each}}
+    </div>
+    {%endif%}
+    {%endif%}
+    {%endif%}
+    {%endfor%}
+    <div class = "column-row2"></div>
+    {{selected_choices.category_view.label}}
+    {{selected_choices.category_view}} <br><br>
+  </form>
+
+
+
+
+{%for each in selected_data %}
+  <div class = "column-row2">
+{{each.0}}: {{each.1}}
+<br/>
+{%if each.2%}
+<form action = "/main/{{netid}}/" enctype="multipart/form-data"method="post">
+  {%csrf_token%}
+{{each.2}}
+
+<input type="submit" value="Submit"  />
+</form>
+{%endif%}
+</div>
+{%endfor%}
+
+</div>
+<div class = "col-3">
+  "hello"
+</div>
+
+<div class = "popup">
+
+<div id = "upload_datas" class = "innerform upload_datas">
+
+<form action = "/main/{{netid}}/" enctype="multipart/form-data"method="post">
+    <h3>Upload a Dataset</h3>
+
+    <div style = "text-align: left; padding-left: 50px; margin-top: 20px;">
+    {% csrf_token %}
+    {%for each in upload_dataset_form%}
+    {{each.label}} {{each}} <br></br>
+    {%endfor%}
+  </div>
+      <input id = "close" type = "reset" class = "close innerform" value = "Cancel"/>
+    <input  class = "close innerform" type="submit" value="Submit"  />
+
+</form>
+
+
+</div>
+
+<div id = "open_datas" class = "innerform open_datas">
+<form action = "/main/{{netid}}/" enctype="multipart/form-data"method="post">
+    <h3>Upload a Dataset</h3>
+
+    <div style = "text-align: left; padding-left: 50px; margin-top: 20px;">
+    {% csrf_token %}
+    {{old_dataset_form}} <br></br>
+
+  </div>
+  <input id = "close" type = "reset" class = "close innerform" value = "Cancel"/>
+
+</form>
+
+
+</div>
+
+</div>
+<!--form to upload new dataset-->
+
+
+</div>
+
+</body>
+<script>
+
+// function takes any popup button (marked with class open)
+// and if it is a certain id display the appropriate hidden field
+// based on the event id + "s"
+$( '.open').click(function(event) {
+
+
+  $('.popup').show();
+  $('.innerform').hide();
+
+  target_id = "." + event.target.id + "s"
+  $(target_id).show();
+  $('.close').show();
+
+});
+
+$( '.workspace-position').click(function(event) {
+
+
+  if ($('#estado_cat').is(":checked")) {
+  $('#estado_cat').prop('checked', false);
+}
+else {
+    $('#estado_cat').prop('checked', true);
+}
+
+});
+
+// hides anything marked as hidden
+$( '.close').click(function(event) {
+  $(".upload_datas").hide();
+  $('.popup').hide();
+});
+</script>
